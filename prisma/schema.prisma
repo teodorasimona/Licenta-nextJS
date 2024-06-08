@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = "mysql://root:root@localhost:3306/trailsDB"
+}
+
+model trails {
+  id          Int               @id @default(autoincrement())
+  name        String            @db.VarChar(255)
+  type        trails_type
+  difficulty  trails_difficulty
+  distance_km Float             @db.Float
+}
+
+enum trails_type {
+  hiking
+  biking
+  walking
+}
+
+enum trails_difficulty {
+  easy
+  medium
+  hard
+}
