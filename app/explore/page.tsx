@@ -16,14 +16,16 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 
 import TrailsList from "@/components/TrailsList/List";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Map from "@/components/map";
+import { PrismaClient } from "@prisma/client";
 
 export default function ExplorePage() {
   const [type, setType] = useState<string>("");
   const [rating, setRating] = useState<string>("");
   const [distance, setDistance] = useState<number[]>([0, 10]);
   const [difficulty, setDifficulty] = useState<string>("");
+  const [trails, setTrails] = useState<Trail[]>([]);
 
   const handleDistanceChange = (
     event: Event,
@@ -34,6 +36,16 @@ export default function ExplorePage() {
       setDistance(newValue);
     }
   };
+
+  useEffect(() => {
+    const fetchTrails = async () => {
+      const response = await fetch("/api/index.tsx");
+      const data: Trail[] = await response.json();
+      setTrails(data);
+    };
+
+    fetchTrails();
+  }, []);
 
   // This would be replaced by actual loading logic
   const isLoading = false;
@@ -64,7 +76,15 @@ export default function ExplorePage() {
       </AppBar>
       <div className="grid grid-cols-1 md:grid-cols-4 ">
         <div className="md:col-span-1">
-          <TrailsList />
+          <h1>Trail List</h1>
+          <ul>
+            {trails.map((trail) => (
+              <li key={trail.id}>
+                {trail.name} - {trail.type} - {trail.difficulty} -{" "}
+                {trail.distance_km} km
+              </li>
+            ))}
+          </ul>
         </div>
         <div className="md:col-span-3">
           <Map />
@@ -72,4 +92,13 @@ export default function ExplorePage() {
       </div>
     </div>
   );
+}
+
+// types.ts
+interface Trail {
+  id: number;
+  name: string;
+  type: "hiking" | "biking" | "walking";
+  difficulty: "easy" | "medium" | "hard";
+  distance_km: number;
 }
