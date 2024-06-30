@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = "mysql://root:root@localhost:3306/trailsDB"
+
 }
 
 model trails {
@@ -13,6 +14,8 @@ model trails {
   type        trails_type
   difficulty  trails_difficulty
   distance_km Float             @db.Float
+  coordinates String          // WKT representation of the coordinates
+  route       String         // WKT representation of the route
 }
 
 enum trails_type {
