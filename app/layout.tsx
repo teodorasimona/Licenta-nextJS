@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import {
   ClerkProvider,
   SignInButton,
+  SignUpButton,
   SignedIn,
   SignedOut,
   UserButton,
@@ -25,15 +26,6 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className="bg-lime-950">
-          {" "}
-          <header>
-            <SignedOut>
-              <SignInButton />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </header>
           <nav className="bg-black absolute top-0 left-0 right-0 z-10 bg-transparent mx-2">
             <div className="flex flex-wrap items-center justify-between mx-auto p-4">
               <a href="/" className="flex items-center space-x-3">
@@ -83,22 +75,7 @@ export default function RootLayout({
                       Exploreaza
                     </a>
                   </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="block py-2 px-3 text-white rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 hover:text-red-700 md:p-0"
-                    >
-                      Despre noi
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="block py-2 px-3 text-white rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:p-0 hover:text-red-700"
-                    >
-                      Profil
-                    </a>
-                  </li>
+
                   <li>
                     <a
                       href="/contact"
@@ -110,12 +87,23 @@ export default function RootLayout({
                 </ul>
               </div>
               <div className="flex gap-5 items-center font-semibold">
-                <div className="text-md py-1.5 px-3 rounded-md bg-stone-200 hover:text-red-700 text-neutral-600">
-                  Intra in cont
-                </div>
-                <div className="text-md py-1.5 px-3 text-white bg-red-500 hover:text-red-700 rounded-md">
-                  Creare cont
-                </div>
+                <SignedOut>
+                  <SignInButton mode="modal">
+                    <div className="text-md py-1.5 px-3 rounded-md bg-stone-200 hover:text-red-700 text-neutral-600">
+                      Intra in cont
+                    </div>
+                  </SignInButton>
+                </SignedOut>
+                <SignedIn>
+                  <UserButton />
+                </SignedIn>
+                <SignedOut>
+                  <SignUpButton mode="modal">
+                    <div className="text-md py-1.5 px-3 text-white bg-red-500 hover:text-red-700 rounded-md">
+                      Creare cont
+                    </div>
+                  </SignUpButton>
+                </SignedOut>
               </div>
             </div>
           </nav>

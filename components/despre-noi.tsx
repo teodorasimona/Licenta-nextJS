@@ -2,7 +2,7 @@ import React from "react";
 
 export default function DespreNoi() {
   return (
-    <div className="flex justify-center items-center px-36 py-12 bg-lime-950 max-md:px-5 ">
+    <div className="flex justify-center items-center px-32 py-12 bg-lime-950 max-md:px-5 ">
       <div className="mt-7 w-full max-md:max-w-full">
         <div className="flex gap-5 max-md:flex-col max-md:gap-0">
           <div className="flex flex-col w-[55%] max-md:ml-0 max-md:w-full">

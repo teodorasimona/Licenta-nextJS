@@ -1,24 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import {
   GoogleMap,
   LoadScript,
-  Marker,
+  MarkerF,
   Polyline,
+  InfoWindow,
+  useJsApiLoader,
 } from "@react-google-maps/api";
-import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
-
-// Function to create icon URL
-const createIconUrl = (iconComponent: React.ReactElement): string => {
-  const iconMarkup = renderToStaticMarkup(iconComponent);
-  const iconUrl = `data:image/svg+xml,${encodeURIComponent(iconMarkup)}`;
-  return iconUrl;
-};
-
-const MyMarker = ({ lat, lng }: { lat: number; lng: number }) => {
-  const iconUrl = createIconUrl(<LocationOnOutlinedIcon />);
-  return <Marker position={{ lat, lng }} icon={{ url: iconUrl }} />;
-};
 
 export interface Trail {
   id: number;
@@ -26,23 +14,33 @@ export interface Trail {
   type: "hiking" | "biking" | "walking";
   difficulty: "easy" | "medium" | "hard";
   distance_km: number;
-  coordinates: [string, string]; // Longitude and Latitude
+  coordinates: string;
   image_url: string;
   route: [number, number][]; // Array of coordinates for the trail route
 }
 
 // Function to parse coordinates from string to number
-const parseCoordinates = (coordinates: [string, string]): [number, number] => {
-  return [parseFloat(coordinates[0]), parseFloat(coordinates[1])];
+const parseCoordinates = (coordinates: string): [number, number] => {
+  const [lat, lng] = coordinates.split(",").map(Number);
+  return [lat, lng]; // [latitude, longitude]
 };
 
-// const parseRoute = (route: [string, string][]): [number, number][] => {
-//   return route.map((coord) => [parseFloat(coord[0]), parseFloat(coord[1])]);
-// };
+const Map = ({
+  trails,
+  onAddTrail,
+  onDeleteTrail,
+}: {
+  trails: Trail[];
+  onAddTrail: (lat: number, lng: number) => void;
+  onDeleteTrail: (id: number) => void;
+}) => {
+  const [latitude, setLatitude] = useState(45.64861);
+  const [longitude, setLongitude] = useState(25.60613);
+  const [hoveredTrail, setHoveredTrail] = useState<Trail | null>(null);
 
-const Map = ({ trails }: { trails: Trail[] }) => {
-  const [latitude, setLatitude] = useState(34.1);
-  const [longitude, setLongitude] = useState(-105.2);
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: "AIzaSyAzKDwUofqEnwS6DHqoi2roaE6AaIR9FWA",
+  });
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -55,42 +53,57 @@ const Map = ({ trails }: { trails: Trail[] }) => {
     );
   }, []);
 
-  useEffect(() => {
-    console.log("Trails data:", trails);
-  }, [trails]);
+  if (!isLoaded) return <div>Loading...</div>;
 
   return (
-    <div className="relative w-full" style={{ height: "81vh" }}>
-      <LoadScript googleMapsApiKey="AIzaSyAzKDwUofqEnwS6DHqoi2roaE6AaIR9FWA">
-        <GoogleMap
-          mapContainerStyle={{ height: "100%", width: "100%" }}
-          center={{ lat: latitude, lng: longitude }}
-          zoom={14}
-        >
-          <MyMarker lat={latitude} lng={longitude} />
-          {trails.map((trail) => {
-            const [lat, lng] = parseCoordinates(trail.coordinates);
-            const route = trail.route; //parseRoute(trail.route);
+    <div className="relative w-full" style={{ height: "84vh" }}>
+      <GoogleMap
+        mapContainerStyle={{ height: "100%", width: "100%" }}
+        center={{ lat: latitude, lng: longitude }}
+        zoom={14}
+        onClick={(e) => {
+          if (e.latLng) {
+            // Funcția apelată la clic pe hartă, în cazul în care locația geografică este disponibilă.
+            onAddTrail(e.latLng.lat(), e.latLng.lng()); // Apelarea funcției onAddTrail pentru a adăuga un nou traseu la coordonatele clicului.
+          }
+        }}
+      >
+        {trails.map((trail) => {
+          const route = trail.route;
+          const [lat, lng] = parseCoordinates(trail.coordinates);
 
-            return (
-              <React.Fragment key={trail.id}>
-                <Marker
+          return (
+            <React.Fragment key={trail.id}>
+              <MarkerF
+                position={{ lat, lng }}
+                onMouseOver={() => setHoveredTrail(trail)}
+                onMouseOut={() => setHoveredTrail(trail)}
+                // onRightClick={() => onDeleteTrail(trail.id)}
+              />
+              {hoveredTrail && hoveredTrail.id === trail.id && (
+                <InfoWindow
                   position={{ lat, lng }}
-                  onClick={() => console.log(`Clicked on trail: ${trail.name}`)}
-                />
-                <Polyline
-                  path={route.map(([lng, lat]) => ({ lat, lng }))}
-                  options={{
-                    strokeColor: "#FF0000",
-                    strokeOpacity: 1.0,
-                    strokeWeight: 2,
-                  }}
-                />
-              </React.Fragment>
-            );
-          })}
-        </GoogleMap>
-      </LoadScript>
+                  onCloseClick={() => setHoveredTrail(null)}
+                >
+                  <div>
+                    <h2>{trail.name}</h2>
+                    <p>Latitudine: {lat}</p>
+                    <p>Longitudine: {lng}</p>
+                  </div>
+                </InfoWindow>
+              )}
+              <Polyline
+                path={route.map(([lat, lng]) => ({ lat, lng }))}
+                options={{
+                  strokeColor: "#FF0000",
+                  strokeOpacity: 1.0,
+                  strokeWeight: 2,
+                }}
+              />
+            </React.Fragment>
+          );
+        })}
+      </GoogleMap>
     </div>
   );
 };
